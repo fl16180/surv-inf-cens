@@ -9,6 +9,7 @@ credentials.py
 # personal paths for development
 surv.code-workspace
 ref/
+tmp/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
