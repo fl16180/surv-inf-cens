@@ -2,8 +2,9 @@ import numpy as np
 from scipy.stats import multivariate_normal as mvn
 from sklearn.datasets import make_regression
 from numpy.random import lognormal, weibull
-
 from scipy.stats import pearsonr
+
+
 def corr(x, y):
     return pearsonr(x, y)[0]
 
@@ -26,6 +27,29 @@ def gen_joint_lognormal(N, mu_s, mu_c, var_s, var_c, cov):
     raw = np.exp(raw)
     S, C = raw[:, 0], raw[:, 1]
     return S, C
+
+
+def survival_table(surv, cens=None):
+    """ generates numpy array with columns 'Event' and 'Time'
+
+    Input:
+        surv: array of survival times
+        cens: array of censoring times
+    """
+    if cens is None:
+        cens = np.full_like(surv, np.inf)
+
+    raw = np.array((surv, cens)).T
+    T = np.min(raw, axis=1)
+    E = raw[:, 0] < raw[:, 1]
+
+    col_event = 'Event'
+    col_time = 'Time'
+    Y = np.empty(dtype=[(col_event, np.bool), (col_time, np.float64)],
+                 shape=T.shape[0])
+    Y[col_event] = E
+    Y[col_time] = T
+    return Y
 
 
 # ----- regression estimation data generation ----- #
@@ -87,29 +111,3 @@ class SynthCovariateData:
         C = rho * Xbeta.flatten() + np.sqrt((1 - rho ** 2)) * U
         C = np.divide(C - np.mean(C), np.std(C))
         return C
-
-
-def survival_table(surv, cens=None):
-    """ generates numpy array with columns 'Event' and 'Time'
-
-    Input:
-        surv: array of survival times
-        cens: array of censoring times
-    """
-    if cens is None:
-        cens = np.full_like(surv, np.inf)
-
-    raw = np.array((surv, cens)).T
-    T = np.min(raw, axis=1)
-    E = raw[:, 0] < raw[:, 1]
-
-    col_event = 'Event'
-    col_time = 'Time'
-    Y = np.empty(dtype=[(col_event, np.bool), (col_time, np.float64)],
-                 shape=T.shape[0])
-    Y[col_event] = E
-    Y[col_time] = T
-    return Y
-
-
-
