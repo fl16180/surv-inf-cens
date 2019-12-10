@@ -31,11 +31,12 @@ def sample_lognormal(mu, sigma):
 
 
 class SynthCovariateData:
-    def __init__(self, N, n_features, n_informative,
+    def __init__(self, N, n_features, n_informative, observe_confounding=True,
                  surv_dist='lognormal', cens_dist='lognormal'):
         self.N = N
         self.n_features = n_features
         self.n_informative = n_informative
+        self.U_obs = observe_confounding
         self.surv_dist = locals()[f'sample_{surv_dist}']
         self.cens_dist = locals()[f'sample_{cens_dist}']
 
@@ -44,7 +45,11 @@ class SynthCovariateData:
         X, Y = make_regression(n_samples=self.N, n_features=self.n_features,
                                n_informative=self.n_informative, noise=0)
         Y = np.divide(Y - np.mean(Y), np.std(Y))
-        C = self.gen_corr_C(Y, rho)
+
+        if self.U_obs:
+            C = self.gen_C_observed(Y, rho)
+        else:
+            C = self.gen_C_unobserved(Y, rho, X)
 
         Y += bias_Y + tau
         C += bias_C
