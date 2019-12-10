@@ -39,14 +39,14 @@ class SynthCovariateData:
         self.surv_dist = locals()[f'sample_{surv_dist}']
         self.cens_dist = locals()[f'sample_{cens_dist}']
 
-    def make_linear(self, bias_Y, bias_C, sigma_Y, sigma_C, rho):
+    def make_linear(self, tau, bias_Y, bias_C, sigma_Y, sigma_C, rho):
 
         X, Y = make_regression(n_samples=self.N, n_features=self.n_features,
                                n_informative=self.n_informative, noise=0)
         Y = np.divide(Y - np.mean(Y), np.std(Y))
         C = self.gen_corr_C(Y, rho)
 
-        Y += bias_Y
+        Y += bias_Y + tau
         C += bias_C
 
         Y_samp = [self.surv_dist(N=1, x, sigma_Y) for x in Y]
