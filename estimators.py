@@ -6,16 +6,13 @@ import numpy as np
 from scipy.stats import multivariate_normal as dist
 
 
-def lognormal_mle(Y, max_iter=1e4, lr=0.05, eps=1e-4):
+def lognormal_mle(Y, max_iter=1e4, lr=0.05, eps=1e-4, verbose=False):
     N = Y.shape[0]
     params = np.array([[0, 0]] * N).T
     for i in range(int(max_iter)):
-        global cout
-        cout = False
-        if i % 500 == 1:
+        if i % 500 == 1 and verbose:
             print('Param: ', params[:, :2])
             print('Grad: ', grad)
-            cout = True
         D = LogNormal(params)
         S = MLE()
 
