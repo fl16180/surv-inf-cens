@@ -3,6 +3,9 @@ from scipy.stats import multivariate_normal as mvn
 from sklearn.datasets import make_regression
 from numpy.random import lognormal, weibull
 
+from scipy.stats import pearsonr
+def corr(x, y):
+    return pearsonr(x, y)[0]
 
 # ----- parameter estimation data generation ----- #
 def gen_lognormal(N, mu, sigma):
@@ -31,7 +34,7 @@ def sample_lognormal(mu, sigma):
 
 
 class SynthCovariateData:
-    def __init__(self, N, n_features, n_informative, observe_confounding=True,
+    def __init__(self, N, n_features, n_informative, observe_confounding=False,
                  surv_dist='lognormal', cens_dist='lognormal'):
         self.N = N
         self.n_features = n_features
@@ -53,6 +56,12 @@ class SynthCovariateData:
         else:
             C = self.gen_C_unobserved(Y, rho)
 
+        # print(corr(X[:, 0], Y))
+        # print(corr(X[:, 0], C))
+        # print(corr(X[:, 1], Y))
+        # print(corr(X[:, 1], C))
+        # print(corr(Y, C))
+
         # add offsets and treatment effect
         Y += bias_Y + tau
         C += bias_C
@@ -73,7 +82,9 @@ class SynthCovariateData:
     def gen_C_observed(self, Y, rho, X):
         beta = np.random.uniform(-2, 2, size=X.shape[1])
         Xbeta = X @ beta[:, None]
-        C = rho * Y + np.sqrt((1 - rho ** 2)) * Xbeta.flatten()
+
+        U = np.random.normal(np.mean(Y), np.std(Y), len(Y))
+        C = rho * Xbeta.flatten() + np.sqrt((1 - rho ** 2)) * U
         C = np.divide(C - np.mean(C), np.std(C))
         return C
 
