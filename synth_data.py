@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.stats import multivariate_normal as mvn
 from sklearn.datasets import make_regression
-from np.random import lognormal, weibull
+from numpy.random import lognormal, weibull
 
 
 # ----- parameter estimation data generation ----- #
@@ -27,7 +27,7 @@ def gen_joint_lognormal(N, mu_s, mu_c, var_s, var_c, cov):
 
 # ----- regression estimation data generation ----- #
 def sample_lognormal(mu, sigma):
-    return np.exp(np.random.normal(mu, sigma, 1))
+    return np.exp(np.random.normal(mu, sigma))
 
 
 class SynthCovariateData:
@@ -37,8 +37,8 @@ class SynthCovariateData:
         self.n_features = n_features
         self.n_informative = n_informative
         self.U_obs = observe_confounding
-        self.surv_dist = locals()[f'sample_{surv_dist}']
-        self.cens_dist = locals()[f'sample_{cens_dist}']
+        self.surv_dist = globals()[f'sample_{surv_dist}']
+        self.cens_dist = globals()[f'sample_{cens_dist}']
 
     def make_linear(self, tau, bias_Y, bias_C, sigma_Y, sigma_C, rho):
 
@@ -47,18 +47,19 @@ class SynthCovariateData:
         Y = np.divide(Y - np.mean(Y), np.std(Y))
 
         if self.U_obs:
-            C = self.gen_C_observed(Y, rho)
+            C = self.gen_C_observed(Y, rho, X)
         else:
-            C = self.gen_C_unobserved(Y, rho, X)
+            C = self.gen_C_unobserved(Y, rho)
 
+        print(max(Y), min(Y), max(C), min(C))
         Y += bias_Y + tau
         C += bias_C
 
-        Y_samp = [self.surv_dist(N=1, x, sigma_Y) for x in Y]
-        C_samp = [self.cens_dist(N=1, x, sigma_C) for x in C]
-
-        Y_obs = survival_table(Y_samp, C_samp)
-        return X, Y_obs, Y_samp, C_samp
+        Y_true = [self.surv_dist(x, sigma_Y) for x in Y]
+        C_true = [self.cens_dist(x, sigma_C) for x in C]
+        print(max(Y_true), min(Y_true), max(C_true), min(C_true))
+        Y_obs = survival_table(Y_true, C_true)
+        return X, Y_obs, Y_true, C_true
 
     def gen_C_unobserved(self, Y, rho):
         U = np.random.normal(np.mean(Y), np.std(Y), len(Y))
