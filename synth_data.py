@@ -55,12 +55,18 @@ class SynthCovariateData:
         Y_obs = survival_table(Y_samp, C_samp)
         return X, Y_obs, Y_samp, C_samp
 
-
-    def gen_corr_C(self, Y,  rho):
+    def gen_C_unobserved(self, Y, rho):
         U = np.random.normal(np.mean(Y), np.std(Y), len(Y))
         C = rho * Y + np.sqrt((1 - rho ** 2)) * U
+        C = np.divide(C - np.mean(C), np.std(C))
         return C
 
+    def gen_C_observed(self, Y, rho, X):
+        beta = np.random.uniform(-2, 2, size=X.shape[1])
+        Xbeta = X @ beta[:, None]
+        C = rho * Y + np.sqrt((1 - rho ** 2)) * Xbeta
+        C = np.divide(C - np.mean(C), np.std(C))
+        return C
 
 
 def survival_table(surv, cens=None):
