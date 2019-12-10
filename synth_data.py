@@ -42,22 +42,25 @@ class SynthCovariateData:
 
     def make_linear(self, tau, bias_Y, bias_C, sigma_Y, sigma_C, rho):
 
+        # generate Y~X as linear model
         X, Y = make_regression(n_samples=self.N, n_features=self.n_features,
                                n_informative=self.n_informative, noise=0)
         Y = np.divide(Y - np.mean(Y), np.std(Y))
 
+        # generate C either as C~Y+X or C~Y+U
         if self.U_obs:
             C = self.gen_C_observed(Y, rho, X)
         else:
             C = self.gen_C_unobserved(Y, rho)
 
-        print(max(Y), min(Y), max(C), min(C))
+        # add offsets and treatment effect
         Y += bias_Y + tau
         C += bias_C
 
+        # add noise following specified distributions
         Y_true = [self.surv_dist(x, sigma_Y) for x in Y]
         C_true = [self.cens_dist(x, sigma_C) for x in C]
-        print(max(Y_true), min(Y_true), max(C_true), min(C_true))
+
         Y_obs = survival_table(Y_true, C_true)
         return X, Y_obs, Y_true, C_true
 
@@ -70,7 +73,7 @@ class SynthCovariateData:
     def gen_C_observed(self, Y, rho, X):
         beta = np.random.uniform(-2, 2, size=X.shape[1])
         Xbeta = X @ beta[:, None]
-        C = rho * Y + np.sqrt((1 - rho ** 2)) * Xbeta
+        C = rho * Y + np.sqrt((1 - rho ** 2)) * Xbeta.flatten()
         C = np.divide(C - np.mean(C), np.std(C))
         return C
 
