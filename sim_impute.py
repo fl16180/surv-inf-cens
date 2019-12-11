@@ -72,6 +72,11 @@ def ngb_impute(estimator, X, Y):
     min_vals = Y['Time'][cens_mask]
     pred_dists = train.pred_dist(X[cens_mask])
 
+    try:
+        outputs = pred_dists.loc[:, 0]
+    except IndexError:
+        outputs = pred_dists.loc
+
     # mus = pred_dists.loc
     # sigmas = pred_dists.scale
     # preds = cond_expectation(estimator, mus, sigmas, min_vals)
@@ -85,7 +90,7 @@ def ngb_impute(estimator, X, Y):
     # print(np.exp(pred_dists.loc)[:10])
     # print(pred_dists.mean()[:10])
 
-    Y_imputed['Time'][cens_mask] = np.exp(pred_dists.loc)
+    Y_imputed['Time'][cens_mask] = np.exp(outputs)
     return Y_imputed
 
 

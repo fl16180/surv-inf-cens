@@ -37,7 +37,7 @@ if __name__ == "__main__":
                         command += f' --est {est}'
                         command += f' --dist {dist}'
                         command += f' --obs_conf {obs_conf}'
-                        command += f' --num_sim 10'
+                        command += f' --num_sim 30'
 
                         name = f'run_{tau}_{rho}_{est}_{dist}_{obs_conf}'
                         commands.append((name, command))
