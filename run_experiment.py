@@ -10,6 +10,7 @@ TAUS = [0.0, 0.03, 0.06, 0.09, 0.12, 0.15]
 ESTS = ['lognorm', 'mvnorm']
 DISTS = ['lognormal']
 CONFOUNDING = [False]
+N_SIM = 2
 
 
 if __name__ == "__main__":
@@ -37,7 +38,7 @@ if __name__ == "__main__":
                         command += f' --est {est}'
                         command += f' --dist {dist}'
                         command += f' --obs_conf {obs_conf}'
-                        command += f' --num_sim 30'
+                        command += f' --num_sim {N_SIM}'
 
                         name = f'run_{tau}_{rho}_{est}_{dist}_{obs_conf}'
                         commands.append((name, command))
