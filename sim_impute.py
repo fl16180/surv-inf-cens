@@ -112,7 +112,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, default=1000)
     args = parser.parse_args()
 
-    pvals = run_sim(args.num_sim, estimators[args.est], args.dist,
+    pvals = run_sim(args.num_sim, str_to_estimator[args.est], args.dist,
                     args.tau, args.rho, args.obs_conf, args.seed)
 
     infos = {'tau': args.tau, 'rho': args.rho, 'est': args.est,
