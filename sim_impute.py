@@ -8,6 +8,7 @@ from ngboost.distns import LogNormal, MultivariateNormal
 from ngboost.learners import default_tree_learner, default_linear_learner
 from ngboost.scores import MLE, CRPS
 from lifelines.statistics import logrank_test
+from scipy.stats import lognorm
 
 
 str_to_estimator = {'lognorm': LogNormal, 'mvnorm': MultivariateNormal}
@@ -38,6 +39,16 @@ def KM(Y):
     return kmf
 
 
+def cond_expectation(estimator, mus, sigmas, min_vals):
+    # currently hardcoded for lognormal
+    def cond_expect_single(mu, sigma, min_val):
+        v = lognorm(s=sigma, scale=np.exp(mu))
+        E1XgtY = v.expect(lambda x: x, lb=min_val, ub=np.inf)
+        PXgtY = v.expect(lambda x: 1, lb=min_val, ub=np.inf)
+        return E1XgtY / PXgtY
+    return np.array([cond_expect_single(*x) for x in zip(mus, sigmas, min_vals)])
+
+
 # ----- simulation functions ----- #
 def ngb_impute(estimator, X, Y):
     base_name_to_learner = {
@@ -56,7 +67,25 @@ def ngb_impute(estimator, X, Y):
 
     train = ngb.fit(X, Y)
     Y_imputed = np.copy(Y)
-    Y_imputed['Time'][Y['Event']] = np.exp(train.predict(X[Y['Event']]))[:len(Y_imputed['Time'][Y['Event']])]
+
+    cens_mask = (Y['Event'] == 0)
+    min_vals = Y['Time'][cens_mask]
+    pred_dists = train.pred_dist(X[cens_mask])
+
+    # mus = pred_dists.loc
+    # sigmas = pred_dists.scale
+    # preds = cond_expectation(estimator, mus, sigmas, min_vals)
+
+    # print(np.sum(cens_mask))
+    # print(min_vals.shape, preds.shape)
+    # print(min_vals)
+    # print(preds)
+
+    # print(min_vals[:10])
+    # print(np.exp(pred_dists.loc)[:10])
+    # print(pred_dists.mean()[:10])
+
+    Y_imputed['Time'][cens_mask] = np.exp(pred_dists.loc)
     return Y_imputed
 
 
@@ -65,7 +94,7 @@ def compute_survival_pvals(estimator, distn, tau, rho, obs_conf=False):
                                observe_confounding=obs_conf,
                                surv_dist=distn, cens_dist=distn)
 
-    treat_X, treat_obsY, _, _  = synth.make_linear(tau=tau,
+    treat_X, treat_obsY, Y_true, _  = synth.make_linear(tau=tau,
                                                    bias_Y=BIAS_Y,
                                                    bias_C=BIAS_C,
                                                    sigma_Y=SIGMA_Y,
