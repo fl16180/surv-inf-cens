@@ -9,6 +9,7 @@ from ngboost.learners import default_tree_learner, default_linear_learner
 from ngboost.scores import MLE, CRPS
 from lifelines.statistics import logrank_test
 from scipy.stats import lognorm
+import matplotlib.pyplot as plt
 
 
 str_to_estimator = {'lognorm': LogNormal, 'mvnorm': MultivariateNormal}
@@ -99,7 +100,7 @@ def compute_survival_pvals(estimator, distn, tau, rho, obs_conf=False):
                                observe_confounding=obs_conf,
                                surv_dist=distn, cens_dist=distn)
 
-    treat_X, treat_obsY, Y_true, _  = synth.make_linear(tau=tau,
+    treat_X, treat_obsY, _, _  = synth.make_linear(tau=tau,
                                                    bias_Y=BIAS_Y,
                                                    bias_C=BIAS_C,
                                                    sigma_Y=SIGMA_Y,

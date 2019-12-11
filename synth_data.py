@@ -57,6 +57,15 @@ def sample_lognormal(mu, sigma):
     return np.exp(np.random.normal(mu, sigma))
 
 
+def sample_weibull(scale, shape):
+    return scale * np.random.weibull(shape)
+
+
+def sample_exponential(mu, sigma):
+    ln_mean = np.exp(mu + sigma ** 2 / 2)
+    return np.random.exponential(ln_mean)
+
+
 class SynthCovariateData:
     def __init__(self, N, n_features, n_informative, observe_confounding=False,
                  surv_dist='lognormal', cens_dist='lognormal'):
