@@ -6,7 +6,7 @@ from subprocess import check_call
 
 
 RHOS = [-0.4, -0.2, 0, 0.2, 0.4]
-TAUS = [0.0, 0.05, 0.1]
+TAUS = [0.0, 0.03, 0.06, 0.09, 0.12, 0.15]
 ESTS = ['lognorm', 'mvnorm']
 DISTS = ['lognormal']
 CONFOUNDING = [False]

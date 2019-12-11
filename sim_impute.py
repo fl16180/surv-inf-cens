@@ -12,14 +12,14 @@ from lifelines.statistics import logrank_test
 
 str_to_estimator = {'lognorm': LogNormal, 'mvnorm': MultivariateNormal}
 
-N = 5000
+N = 1000
 N_FEAT = 5
 N_INFO = 3
 BIAS_Y=0.5
 BIAS_C=0.5
 SIGMA_Y=0.1
 SIGMA_C=0.1
-LEARNER = 'linear'
+LEARNER = 'tree'
 
 
 # ----- survival tools ----- #
@@ -60,8 +60,7 @@ def ngb_impute(estimator, X, Y):
     return Y_imputed
 
 
-def compute_survival_pvals(estimator, distn, tau=0, rho=0.0, obs_conf=False):
-
+def compute_survival_pvals(estimator, distn, tau, rho, obs_conf=False):
     synth = SynthCovariateData(N, n_features=N_FEAT, n_informative=N_INFO,
                                observe_confounding=obs_conf,
                                surv_dist=distn, cens_dist=distn)
@@ -103,9 +102,9 @@ def run_sim(N_iter, estimator, distn, tau, rho, obs_conf, seed):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--tau', type=float, default=0.05)
+    parser.add_argument('--tau', type=float, default=0.0)
     parser.add_argument('--rho', type=float, default=0.0)
-    parser.add_argument('--est', type=str, choices=['lognorm', 'mvnorm'])
+    parser.add_argument('--est', type=str, default='lognorm', choices=['lognorm', 'mvnorm'])
     parser.add_argument('--dist', type=str, default='lognormal')
     parser.add_argument('--obs_conf', type=bool, default=False)
     parser.add_argument('--num_sim', type=int, default=30)
@@ -122,4 +121,4 @@ if __name__ == '__main__':
     name = f'run_{args.tau}_{args.rho}_{args.est}_{args.dist}_{args.obs_conf}'
 
     results = pd.DataFrame(infos)
-    results.to_csv(f'./results/{name}'.csv, index=False)
+    results.to_csv(f'./results/{name}.csv', index=False)
